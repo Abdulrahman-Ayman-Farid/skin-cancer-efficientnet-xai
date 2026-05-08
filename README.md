@@ -12,24 +12,26 @@ This project classifies skin cancer images as **malignant** or **benign** using:
 
 ```
 skin-cancer-efficientnet-xai/
-├── data/
+├── data/                           # Dataset (created by setup_colab.py)
 │   ├── train/
 │   │   ├── benign/
 │   │   └── malignant/
 │   └── test/
 │       ├── benign/
 │       └── malignant/
-├── models/
-├── results/
-│   ├── metrics/
-│   ├── gradcam/
-│   └── inference/
-├── load_data.py
-├── load_image.py
-├── pre_processing.py
-├── model_efficientnet_b0.py
-├── xai_gradcam.py
-├── inference.py
+├── models/                         # Saved models
+├── results/                        # All outputs
+│   ├── metrics/                    # Confusion matrix, ROC curves
+│   ├── gradcam/                    # Grad-CAM visualizations
+│   └── inference/                  # Single-image inference outputs
+├── load_data.py                    # Data loading
+├── load_image.py                   # Image preprocessing
+├── pre_processing.py               # Train/val split, augmentation
+├── model_efficientnet_b0.py        # Training script
+├── xai_gradcam.py                  # Grad-CAM generation
+├── inference.py                    # Single-image inference
+├── setup_colab.py                  # Kaggle dataset downloader
+├── run_on_colab.ipynb              # Colab notebook (run this on Colab!)
 ├── requirements.txt
 └── README.md
 ```
@@ -38,58 +40,56 @@ skin-cancer-efficientnet-xai/
 
 - **`load_data.py`** — Loads image paths and generates malignant/benign labels
 - **`load_image.py`** — Reads, decodes, resizes, and normalizes images to tensors
-- **`pre_processing.py`** — Train/validation split + augmentation (`RandomFlip`, `RandomZoom`); also provides `pre_process_df()` for sampled data
-- **`model_efficientnet_b0.py`** — Builds EfficientNet-B0 with ImageNet weights, trains, evaluates, and saves the best model
-- **`xai_gradcam.py`** — Generates Grad-CAM heatmaps and overlays for sampled test images
+- **`pre_processing.py`** — Train/validation split + augmentation; provides `pre_process_df()` for sampled data
+- **`model_efficientnet_b0.py`** — Trains EfficientNet-B0 with ImageNet weights
+- **`xai_gradcam.py`** — Generates Grad-CAM heatmaps and overlays
 - **`inference.py`** — Single-image inference with Grad-CAM overlay
+- **`setup_colab.py`** — Downloads ISIC dataset from Kaggle and organizes into `data/` folders
+- **`run_on_colab.ipynb`** — **Main Colab notebook** — run this on Google Colab
 
 ## Dataset
 
 [ISIC Skin Cancer Dataset](https://www.kaggle.com/datasets/nodoubttome/skin-cancer9-classesisic) from Kaggle.
 Organize it into `data/train/` and `data/test/` with `benign/` and `malignant/` subfolders.
 
-## Google Colab Setup
+## Google Colab Setup (Easy Method)
 
-1. **Mount Drive** (if storing data on Google Drive):
-   ```python
-   from google.colab import drive
-   drive.mount('/content/drive')
-   ```
+**Option 1: Use the Notebook (Recommended)**
 
-2. **Clone or upload this repo** to `/content/skin-cancer-efficientnet-xai`.
+1. Upload the entire repo to Google Colab or GitHub
+2. Open `run_on_colab.ipynb` in Colab
+3. Run cells sequentially — it handles everything:
+   - Kaggle authentication
+   - Dataset download
+   - Model training
+   - Grad-CAM generation
+   - Results download
 
-3. **Symlink or copy data**:
-   ```python
-   !mkdir -p /content/skin-cancer-efficientnet-xai/data
-   !cp -r /content/drive/MyDrive/ISIC_data/train /content/skin-cancer-efficientnet-xai/data/
-   !cp -r /content/drive/MyDrive/ISIC_data/test /content/skin-cancer-efficientnet-xai/data/
-   ```
+**Option 2: Manual Setup**
 
-4. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+# 1. Upload repo to Colab
+# 2. Configure Kaggle API (get kaggle.json from kaggle.com → Account → API)
+!mkdir -p ~/.kaggle && cp kaggle.json ~/.kaggle/ && chmod 600 ~/.kaggle/kaggle.json
 
-5. **Run training**:
-   ```bash
-   cd /content/skin-cancer-efficientnet-xai
-   python model_efficientnet_b0.py
-   ```
+# 3. Download and organize dataset
+!python setup_colab.py
 
-   Trained model is saved to `models/efficientnet_b0_best.keras`.
-   Metrics are saved to `results/metrics/`.
+# 4. Train model
+!python model_efficientnet_b0.py
 
-6. **Run Grad-CAM on sampled test images**:
-   ```bash
-   python xai_gradcam.py
-   ```
-   Outputs go to `results/gradcam/`.
+# 5. Generate Grad-CAM
+!python xai_gradcam.py
 
-7. **Run single-image inference**:
-   ```bash
-   python inference.py --image data/test/malignant/example.jpg
-   ```
-   Output goes to `results/inference/`.
+# 6. Test inference
+!python inference.py --image data/test/malignant/example.jpg
+```
+
+**Outputs:**
+- `models/efficientnet_b0_best.keras` — trained model
+- `results/metrics/` — confusion matrix & ROC curves
+- `results/gradcam/` — Grad-CAM visualizations
+- `results/inference/` — single-image inference results
 
 ## Local Setup
 
