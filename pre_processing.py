@@ -28,12 +28,17 @@ def pre_processing(train_df, test_df):
     """
 
     # split the training data into train-validation set with 80-20 ratio
-    train_idx, val_ind, _, _ = train_test_split(train_df.index, train_df.label_encoded, test_size = 0.20,
-                                            stratify = train_df.label_encoded, random_state = 42)
+    train_idx, val_idx, _, _ = train_test_split(
+        train_df.index,
+        train_df.label_encoded,
+        test_size=0.20,
+        stratify=train_df.label_encoded,
+        random_state=42,
+    )
 
     # get training and validation data
-    train_new_df = train_df.iloc[train_idx].reset_index(drop = True)
-    val_df = train_df.iloc[val_ind].reset_index(drop = True)
+    train_new_df = train_df.loc[train_idx].reset_index(drop=True)
+    val_df = train_df.loc[val_idx].reset_index(drop=True)
 
     # view shapes for train and validation data after split
     print(f"training size: {train_new_df.shape}, validation size: {val_df.shape}")
